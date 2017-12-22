@@ -1,5 +1,4 @@
 const request = require("request")
-const axios = require("axios");
 
 class api_v1 {
   initilaize(app){
@@ -7,7 +6,7 @@ class api_v1 {
     app.post("/", (req,res)=>{
 
     let postdata ={
-      urls: req.body.urls.split(","),
+      urls: req.body.urls,
       data: req.body.data,
       hook_time: Date.now()
     }
@@ -23,32 +22,32 @@ class api_v1 {
         return new Promise((resolve, reject) => {
             let request_obj = {
                 options : {
-                url: url,
-                method: 'POST',
-                form: postdata.data
-            },
-            count: 0
-        }
-        var id = setInterval(function(){
-            request(request_obj.options, function (error, response, body) {
-            if (error) {
-                if(request_obj.count === 5) clearInterval(id);
-                request_obj.count++;
-                console.log(request_obj.count)
-                reject(false)
+                    url: url,
+                    method: 'POST',
+                    json: postdata.data
+                },
+                count: 0
             }
-            console.log(request_obj.count)
-            console.log(body)
-            clearInterval(id);
-            resolve(true)
-            })
-    }, 10000)
+            var id = setInterval(function(){
+                request(request_obj.options, function (error, response, body) {
+                    if (error) {
+                        request_obj.count++;
+                        if(request_obj.count === 5) clearInterval(id);
+                        console.log(request_obj.count+ '.' ,' Error of  ', request_obj.options.url, " url")
+                        reject("Error: Url is wrong or Server does not response.")
+                    }
+                    else {
+                        clearInterval(id);
+                        resolve("Request is complite")
+                    }
+                });
+            }, 10000)
 
-    }).then(data=>{
-        console.log(data)
-    }).catch(err =>{
-        console.log(err);
-    });
+        }).then(data=>{
+            console.log(data)
+        }).catch(err =>{
+            console.log(err);
+        });
 
     });
 
