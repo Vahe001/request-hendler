@@ -12,35 +12,45 @@ class api_v1 {
       hook_time: Date.now()
     }
 
-    if(!postdata.urls || (postdata.urls.length == 1 && !postdata.urls[0]))
-    {
+    if(!postdata.urls || (postdata.urls.length == 1 && !postdata.urls[0])){
         return res.send("error")
     }
 
-    console.log(postdata.urls);
+    res.send("Thanks for your post request. \n Request is handling");
 
     let all_requests = postdata.urls.map(url => {
+
         return new Promise((resolve, reject) => {
-            let options = {
+            let request_obj = {
+                options : {
                 url: url,
                 method: 'POST',
                 form: postdata.data
-            };
+            },
+            count: 0
+        }
+        var id = setInterval(function(){
+            request(request_obj.options, function (error, response, body) {
+            if (error) {
+                if(request_obj.count === 5) clearInterval(id);
+                request_obj.count++;
+                console.log(request_obj.count)
+                reject(false)
+            }
+            console.log(request_obj.count)
+            console.log(body)
+            clearInterval(id);
+            resolve(true)
+            })
+    }, 10000)
 
-            request(options, function (error, response, body) {
-                if (error) return reject(error);
-
-                return resolve(body);
-            });
-        });
+    }).then(data=>{
+        console.log(data)
+    }).catch(err =>{
+        console.log(err);
     });
 
-    Promise.all(all_requests).then(results => {
-        return res.send(results);
-    }).catch(err => {
-        return res.send(err);
     });
-
 
 
     })
